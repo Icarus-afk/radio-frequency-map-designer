@@ -1,8 +1,8 @@
 import json
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QInputDialog, QColorDialog, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog
-from PyQt5.QtGui import QColor, QPen, QBrush, QFont
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem,\
+                            QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog
+from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter
 from PyQt5.QtCore import Qt, QRectF
-
 
 
 class RFService:
@@ -11,7 +11,6 @@ class RFService:
         self.start = start
         self.end = end
         self.color = color
-
 
 class RFAllocationTable(QMainWindow):
     def __init__(self):
@@ -51,9 +50,6 @@ class RFAllocationTable(QMainWindow):
 
         self.add_service_button = QPushButton("Add Service")
         self.add_service_button.clicked.connect(self.add_service)
-        self.color_button = QPushButton("Select Color")
-        self.color_button.clicked.connect(self.select_color)
-        self.input_layout.addWidget(self.color_button)
         self.input_layout.addWidget(self.add_service_button)
 
         self.input_layout.addStretch()
@@ -75,20 +71,20 @@ class RFAllocationTable(QMainWindow):
         file_menu = self.menuBar().addMenu("File")
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.load_action)
-        
-    def select_color(self):
-        color = QColorDialog.getColor()
-        if color.isValid():
-            self.selected_color = color
 
     def add_service(self):
         service_name = self.service_name_edit.text()
         start_frequency = float(self.start_frequency_edit.text())
         end_frequency = float(self.end_frequency_edit.text())
-        color = QColorDialog.getColor()
 
-        if service_name and start_frequency and end_frequency and color.isValid():
-            service = RFService(service_name, start_frequency, end_frequency, color)
+        color = QColorDialog.getColor()
+        if color.isValid():
+            service_color = color
+        else:
+            service_color = QColor(255, 0, 0)  # Predefined color (red)
+
+        if service_name and start_frequency and end_frequency:
+            service = RFService(service_name, start_frequency, end_frequency, service_color)
             self.rf_services.append(service)
             self.update_rf_map()
 
@@ -121,7 +117,7 @@ class RFAllocationTable(QMainWindow):
                 if existing_service != service:
                     # Check if there is overlap with existing services
                     if (service.end >= existing_service.start and service.start <= existing_service.end) or \
-                       (service.start <= existing_service.end and service.end >= existing_service.start):
+                    (service.start <= existing_service.end and service.end >= existing_service.start):
                         overlapping_services.append(existing_service)
 
             if overlapping_services:
@@ -188,7 +184,6 @@ class RFAllocationTable(QMainWindow):
                     service = RFService(name, start, end, color)
                     self.rf_services.append(service)
                 self.update_rf_map()
-
 
 
 if __name__ == "__main__":
