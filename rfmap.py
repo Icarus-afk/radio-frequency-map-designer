@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QInputDialog, QColorDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QInputDialog, QColorDialog, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtGui import QColor, QPen, QBrush, QFont
 from PyQt5.QtCore import Qt, QRectF
+
 
 class RFService:
     def __init__(self, name, start, end, color):
@@ -8,6 +9,7 @@ class RFService:
         self.start = start
         self.end = end
         self.color = color
+
 
 class RFAllocationTable(QMainWindow):
     def __init__(self):
@@ -26,21 +28,55 @@ class RFAllocationTable(QMainWindow):
 
         self.rf_services = []
 
-    def mousePressEvent(self, event):
-        if self.rf_spectrum_rect.contains(event.pos()):
-            service_name, ok = QInputDialog.getText(self, "Add RF Service", "Service Name:")
-            if ok and service_name:
-                start, ok1 = QInputDialog.getDouble(self, "Add RF Service", "Start Frequency:")
-                if ok1:
-                    end, ok2 = QInputDialog.getDouble(self, "Add RF Service", "End Frequency:")
-                    if ok2:
-                        color = QColorDialog.getColor()
-                        if color.isValid():
-                            service = RFService(service_name, start, end, color)
-                            self.rf_services.append(service)
-                            self.update_rf_map()
+        self.input_widget = QWidget()
+        self.input_layout = QVBoxLayout()
+        self.input_widget.setLayout(self.input_layout)
 
-        super().mousePressEvent(event)
+        self.service_name_label = QLabel("Service Name:")
+        self.service_name_edit = QLineEdit()
+        self.input_layout.addWidget(self.service_name_label)
+        self.input_layout.addWidget(self.service_name_edit)
+
+        self.start_frequency_label = QLabel("Start Frequency:")
+        self.start_frequency_edit = QLineEdit()
+        self.input_layout.addWidget(self.start_frequency_label)
+        self.input_layout.addWidget(self.start_frequency_edit)
+
+        self.end_frequency_label = QLabel("End Frequency:")
+        self.end_frequency_edit = QLineEdit()
+        self.input_layout.addWidget(self.end_frequency_label)
+        self.input_layout.addWidget(self.end_frequency_edit)
+
+        self.add_service_button = QPushButton("Add Service")
+        self.add_service_button.clicked.connect(self.add_service)
+        self.color_button = QPushButton("Select Color")
+        self.color_button.clicked.connect(self.select_color)
+        self.input_layout.addWidget(self.color_button)
+        self.input_layout.addWidget(self.add_service_button)
+
+        self.input_layout.addStretch()
+
+        self.input_widget.setMaximumWidth(200)
+        toolbar = self.addToolBar("Input Fields")
+        toolbar.setFixedWidth(200)
+        toolbar.setMovable(False)
+        toolbar.addWidget(self.input_widget)
+
+    def select_color(self):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.selected_color = color
+
+    def add_service(self):
+        service_name = self.service_name_edit.text()
+        start_frequency = float(self.start_frequency_edit.text())
+        end_frequency = float(self.end_frequency_edit.text())
+        color = QColorDialog.getColor()
+
+        if service_name and start_frequency and end_frequency and color.isValid():
+            service = RFService(service_name, start_frequency, end_frequency, color)
+            self.rf_services.append(service)
+            self.update_rf_map()
 
     def update_rf_map(self):
         self.rf_map_scene.clear()
