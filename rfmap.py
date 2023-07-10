@@ -78,7 +78,7 @@ class RFAllocationTable(QMainWindow):
                 num_overlapping = len(overlapping_services) + 1
                 box_height = self.rf_spectrum_rect.height() / num_overlapping
                 box_y = self.rf_spectrum_rect.y() + box_height
-                
+
                 for overlapping_service in overlapping_services:
                     overlapping_normalized_start = (overlapping_service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
                     overlapping_normalized_end = (overlapping_service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
