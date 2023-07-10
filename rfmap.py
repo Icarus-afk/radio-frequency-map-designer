@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QInputDialog, QColorDialog
-from PyQt5.QtGui import QColor, QPen, QBrush
+from PyQt5.QtGui import QColor, QPen, QBrush, QFont
 from PyQt5.QtCore import Qt, QRectF
 
 class RFService:
@@ -61,7 +61,46 @@ class RFAllocationTable(QMainWindow):
             brush = QBrush(service.color)
 
             self.rf_map_scene.addRect(service_rect, pen, brush)
-            self.rf_map_scene.addSimpleText(service.name).setPos(service_rect.x(), service_rect.y() + service_rect.height() + 5)
+
+            text_item = self.rf_map_scene.addSimpleText(service.name)
+            text_item.setPos(service_rect.x() + 5, service_rect.y() + 5)
+            text_item.setFont(QFont("Arial", 8))
+
+            overlapping_services = []
+            for existing_service in self.rf_services:
+                if existing_service != service:
+                    # Check if there is overlap with existing services
+                    if (service.end >= existing_service.start and service.start <= existing_service.end) or \
+                       (service.start <= existing_service.end and service.end >= existing_service.start):
+                        overlapping_services.append(existing_service)
+
+            if overlapping_services:
+                num_overlapping = len(overlapping_services) + 1
+                box_height = self.rf_spectrum_rect.height() / num_overlapping
+                box_y = self.rf_spectrum_rect.y() + box_height
+                
+                for overlapping_service in overlapping_services:
+                    overlapping_normalized_start = (overlapping_service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+                    overlapping_normalized_end = (overlapping_service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+                    overlapping_box_width = (overlapping_normalized_end - overlapping_normalized_start) * self.rf_spectrum_rect.width()
+
+                    overlapping_service_rect = QRectF(
+                        self.rf_spectrum_rect.x() + overlapping_normalized_start * self.rf_spectrum_rect.width(),
+                        box_y,
+                        overlapping_box_width,
+                        box_height
+                    )
+
+                    pen = QPen(Qt.black)
+                    brush = QBrush(overlapping_service.color)
+
+                    self.rf_map_scene.addRect(overlapping_service_rect, pen, brush)
+
+                    text_item = self.rf_map_scene.addSimpleText(overlapping_service.name)
+                    text_item.setPos(overlapping_service_rect.x() + 5, overlapping_service_rect.y() + 5)
+                    text_item.setFont(QFont("Arial", 8))
+
+                    box_y += box_height
 
     def resizeEvent(self, event):
         self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100, self.rf_spectrum_rect.height() + 100)
