@@ -1,6 +1,8 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QInputDialog, QColorDialog, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+import json
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QInputDialog, QColorDialog, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog
 from PyQt5.QtGui import QColor, QPen, QBrush, QFont
 from PyQt5.QtCore import Qt, QRectF
+
 
 
 class RFService:
@@ -61,7 +63,19 @@ class RFAllocationTable(QMainWindow):
         toolbar.setFixedWidth(200)
         toolbar.setMovable(False)
         toolbar.addWidget(self.input_widget)
+        self.save_action = QAction("Save", self)
+        self.save_action.triggered.connect(self.save_file)
 
+        self.load_action = QAction("Load", self)
+        self.load_action.triggered.connect(self.load_file)
+
+        self.create_menus()
+
+    def create_menus(self):
+        file_menu = self.menuBar().addMenu("File")
+        file_menu.addAction(self.save_action)
+        file_menu.addAction(self.load_action)
+        
     def select_color(self):
         color = QColorDialog.getColor()
         if color.isValid():
@@ -141,6 +155,40 @@ class RFAllocationTable(QMainWindow):
     def resizeEvent(self, event):
         self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100, self.rf_spectrum_rect.height() + 100)
         super().resizeEvent(event)
+
+    def save_file(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "radio map (*.rfmap)")
+        if file_path:
+            if not file_path.endswith(".rfmap"):
+                file_path += ".rfmap"
+            data = {
+                "services": [
+                    {
+                        "name": service.name,
+                        "start": service.start,
+                        "end": service.end,
+                        "color": service.color.name()
+                    }
+                    for service in self.rf_services
+                ]
+            }
+            with open(file_path, "w") as file:
+                json.dump(data, file)
+    def load_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Load File", "", "radio map (*.rfmap)")
+        if file_path:
+            with open(file_path, "r") as file:
+                data = json.load(file)
+                self.rf_services = []
+                for service_data in data["services"]:
+                    name = service_data["name"]
+                    start = service_data["start"]
+                    end = service_data["end"]
+                    color = QColor(service_data["color"])
+                    service = RFService(name, start, end, color)
+                    self.rf_services.append(service)
+                self.update_rf_map()
+
 
 
 if __name__ == "__main__":
