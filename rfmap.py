@@ -1,8 +1,9 @@
 import json
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem,\
-                            QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog
-from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter
-from PyQt5.QtCore import Qt, QRectF
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, \
+    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip
+from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
+from PyQt5.QtCore import Qt, QRectF, QPoint
+from PyQt5 import QtPrintSupport
 
 
 class RFService:
@@ -20,12 +21,14 @@ class RFAllocationTable(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
 
         self.rf_map_scene = QGraphicsScene(self)
-        self.rf_map_view = QGraphicsView(self.rf_map_scene)
+        self.rf_map_view = CustomGraphicsView(self.rf_map_scene)
         self.setCentralWidget(self.rf_map_view)
 
         self.rf_spectrum_rect = QRectF(50, 50, 700, 300)
-        self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100, self.rf_spectrum_rect.height() + 100)
+        self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100,
+                                       self.rf_spectrum_rect.height() + 100)
         self.rf_map_view.setScene(self.rf_map_scene)
+        self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Enable horizontal scrolling
 
         self.rf_services = []
 
@@ -59,18 +62,38 @@ class RFAllocationTable(QMainWindow):
         toolbar.setFixedWidth(200)
         toolbar.setMovable(False)
         toolbar.addWidget(self.input_widget)
+
+        self.edit_service_action = QAction("Edit Service", self)
+        self.edit_service_action.triggered.connect(self.edit_service)
+        self.delete_service_action = QAction("Delete Service", self)
+        self.delete_service_action.triggered.connect(self.delete_service)
         self.save_action = QAction("Save", self)
         self.save_action.triggered.connect(self.save_file)
-
         self.load_action = QAction("Load", self)
         self.load_action.triggered.connect(self.load_file)
+        self.export_image_action = QAction("Export Image", self)
+        self.export_image_action.triggered.connect(self.export_image)
+        self.print_action = QAction("Print", self)
+        self.print_action.triggered.connect(self.print_table)
 
         self.create_menus()
+
+        # Enable tool tips
+        QToolTip.setFont(QFont("Arial", 10))
+        self.rf_map_view.setMouseTracking(True)
+        self.rf_map_view.viewport().setMouseTracking(True)
 
     def create_menus(self):
         file_menu = self.menuBar().addMenu("File")
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.load_action)
+        file_menu.addAction(self.export_image_action)
+        file_menu.addAction(self.print_action)
+        
+        edit_menu = self.menuBar().addMenu("Edit")
+        edit_menu.addAction(self.edit_service_action)
+        edit_menu.addAction(self.delete_service_action)
+
 
     def add_service(self):
         service_name = self.service_name_edit.text()
@@ -96,28 +119,30 @@ class RFAllocationTable(QMainWindow):
             normalized_end = (service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
             box_width = (normalized_end - normalized_start) * self.rf_spectrum_rect.width()
 
-            service_rect = QRectF(
+            service_rect = QGraphicsRectItem(
                 self.rf_spectrum_rect.x() + normalized_start * self.rf_spectrum_rect.width(),
                 self.rf_spectrum_rect.y(),
                 box_width,
                 self.rf_spectrum_rect.height()
             )
-
-            pen = QPen(Qt.black)
-            brush = QBrush(service.color)
-
-            self.rf_map_scene.addRect(service_rect, pen, brush)
+            service_rect.setPen(QPen(Qt.black))
+            service_rect.setBrush(QBrush(service.color))
+            self.rf_map_scene.addItem(service_rect)
 
             text_item = self.rf_map_scene.addSimpleText(service.name)
             text_item.setPos(service_rect.x() + 5, service_rect.y() + 5)
             text_item.setFont(QFont("Arial", 8))
+
+            # Add tooltip for each service
+            tooltip_text = f"Name: {service.name}\nStart Frequency: {service.start}\nEnd Frequency: {service.end}"
+            service_rect.setToolTip(tooltip_text)
 
             overlapping_services = []
             for existing_service in self.rf_services:
                 if existing_service != service:
                     # Check if there is overlap with existing services
                     if (service.end >= existing_service.start and service.start <= existing_service.end) or \
-                    (service.start <= existing_service.end and service.end >= existing_service.start):
+                            (service.start <= existing_service.end and service.end >= existing_service.start):
                         overlapping_services.append(existing_service)
 
             if overlapping_services:
@@ -126,27 +151,30 @@ class RFAllocationTable(QMainWindow):
                 box_y = self.rf_spectrum_rect.y() + box_height
 
                 for overlapping_service in overlapping_services:
-                    overlapping_normalized_start = (overlapping_service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
-                    overlapping_normalized_end = (overlapping_service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
-                    overlapping_box_width = (overlapping_normalized_end - overlapping_normalized_start) * self.rf_spectrum_rect.width()
+                    overlapping_normalized_start = (
+                            overlapping_service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+                    overlapping_normalized_end = (
+                            overlapping_service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+                    overlapping_box_width = (
+                            overlapping_normalized_end - overlapping_normalized_start) * self.rf_spectrum_rect.width()
 
-                    overlapping_service_rect = QRectF(
+                    overlapping_service_rect = QGraphicsRectItem(
                         self.rf_spectrum_rect.x() + overlapping_normalized_start * self.rf_spectrum_rect.width(),
                         box_y,
                         overlapping_box_width,
                         box_height
                     )
-
-                    pen = QPen(Qt.black)
-                    brush = QBrush(overlapping_service.color)
-
-                    self.rf_map_scene.addRect(overlapping_service_rect, pen, brush)
+                    overlapping_service_rect.setPen(QPen(Qt.black))
+                    overlapping_service_rect.setBrush(QBrush(overlapping_service.color))
+                    self.rf_map_scene.addItem(overlapping_service_rect)
 
                     text_item = self.rf_map_scene.addSimpleText(overlapping_service.name)
                     text_item.setPos(overlapping_service_rect.x() + 5, overlapping_service_rect.y() + 5)
                     text_item.setFont(QFont("Arial", 8))
 
-                    box_y += box_height
+                    # Add tooltip for each overlapping service
+                    tooltip_text = f"Name: {overlapping_service.name}\nStart Frequency: {overlapping_service.start}\nEnd Frequency: {overlapping_service.end}"
+                    overlapping_service_rect.setToolTip(tooltip_text)
 
     def resizeEvent(self, event):
         self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100, self.rf_spectrum_rect.height() + 100)
@@ -170,6 +198,7 @@ class RFAllocationTable(QMainWindow):
             }
             with open(file_path, "w") as file:
                 json.dump(data, file)
+
     def load_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Load File", "", "radio map (*.rfmap)")
         if file_path:
@@ -184,6 +213,76 @@ class RFAllocationTable(QMainWindow):
                     service = RFService(name, start, end, color)
                     self.rf_services.append(service)
                 self.update_rf_map()
+
+    def edit_service(self):
+        selected_items = self.rf_map_scene.selectedItems()
+        if len(selected_items) > 0:
+            item = selected_items[0]
+            index = self.rf_map_scene.items().index(item)
+            service = self.rf_services[index]
+            self.service_name_edit.setText(service.name)
+            self.start_frequency_edit.setText(str(service.start))
+            self.end_frequency_edit.setText(str(service.end))
+            color = QColorDialog.getColor(service.color)
+            if color.isValid():
+                service.color = color
+            self.update_rf_map()
+
+    def delete_service(self):
+        selected_items = self.rf_map_scene.selectedItems()
+        if len(selected_items) > 0:
+            item = selected_items[0]
+            index = self.rf_map_scene.items().index(item)
+            self.rf_services.pop(index)
+            self.update_rf_map()
+
+    def export_image(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export Image", "", "PNG (*.png);;JPEG (*.jpg *.jpeg)")
+        if file_path:
+            pixmap = self.rf_map_view.grab()
+            pixmap.save(file_path)
+
+    def print_table(self):
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+        dialog = QtPrintSupport.QPrintDialog(printer, self)
+        if dialog.exec_() == QtPrintSupport.QPrintDialog.Accepted:
+            painter = QPainter(printer)
+            painter.setRenderHint(QPainter.Antialiasing)
+            self.rf_map_view.render(painter)
+            painter.end()
+
+
+class CustomGraphicsView(QGraphicsView):
+    def __init__(self, scene):
+        super().__init__(scene)
+        self.tooltips = []
+
+    def mouseMoveEvent(self, event):
+        position = event.pos()
+        tooltip_text = ""
+        for tooltip_item in self.tooltips:
+            if tooltip_item.rect().contains(position):
+                tooltip_text = tooltip_item.tooltip()
+                break
+        QToolTip.showText(event.globalPos(), tooltip_text, self)
+
+
+class TooltipItem(QGraphicsRectItem):
+    def __init__(self, rect, tooltip):
+        super().__init__(rect)
+        self.setBrush(Qt.NoBrush)
+        self.setAcceptHoverEvents(True)
+        self.setToolTip(tooltip)
+        self.rect = rect
+        self.tooltip = tooltip
+
+    def hoverEnterEvent(self, event):
+        self.setBrush(Qt.lightGray)
+        self.setCursor(Qt.PointingHandCursor)
+
+    def hoverLeaveEvent(self, event):
+        self.setBrush(Qt.NoBrush)
+        self.setCursor(Qt.ArrowCursor)
 
 
 if __name__ == "__main__":
