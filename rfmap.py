@@ -60,7 +60,7 @@ class RFAllocationTable(QMainWindow):
         self.input_widget.setMaximumWidth(200)
         toolbar = self.addToolBar("Input Fields")
         toolbar.setFixedWidth(200)
-        toolbar.setMovable(False)
+        toolbar.setMovable(True)
         toolbar.addWidget(self.input_widget)
 
         self.edit_service_action = QAction("Edit Service", self)
@@ -174,9 +174,9 @@ class RFAllocationTable(QMainWindow):
                     box_y += box_height
 
     def resizeEvent(self, event):
-        self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100,
-                                       self.rf_spectrum_rect.height() + 100)
+        self.rf_map_scene.setSceneRect(self.rf_map_scene.itemsBoundingRect())
         super().resizeEvent(event)
+
 
     def save_file(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "radio map (*.rfmap)")
@@ -264,6 +264,16 @@ class CustomGraphicsView(QGraphicsView):
                 break
         QToolTip.showText(event.globalPos(), tooltip_text, self)
 
+    def wheelEvent(self, event):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier:
+            # Enable horizontal scrolling when holding the Ctrl key and scrolling
+            delta = event.angleDelta().y() / 120
+            scroll_value = int(delta * 20)  # Convert scroll_value to an integer
+            self.scroll(scroll_value, 0)
+        else:
+            # Perform default vertical scrolling
+            super().wheelEvent(event)
 
 if __name__ == "__main__":
     app = QApplication([])
