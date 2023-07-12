@@ -5,6 +5,7 @@ from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
 from PyQt5.QtCore import Qt, QRectF, QPoint
 from PyQt5 import QtPrintSupport
 
+
 class RFService:
     def __init__(self, name, start, end, color):
         self.name = name
@@ -124,7 +125,7 @@ class RFAllocationTable(QMainWindow):
             self.rf_map_scene.addItem(service_rect)
 
             text_item = self.rf_map_scene.addSimpleText(service.name)
-            text_item.setPos(service_rect.x() + 5, service_rect.y() + 5)
+            text_item.setPos(service_rect.rect().topLeft() + QPoint(5, 5))
             text_item.setFont(QFont("Arial", 8))
 
             # Add tooltip for each service
@@ -163,7 +164,7 @@ class RFAllocationTable(QMainWindow):
                     self.rf_map_scene.addItem(overlapping_service_rect)
 
                     text_item = self.rf_map_scene.addSimpleText(overlapping_service.name)
-                    text_item.setPos(overlapping_service_rect.x() + 5, overlapping_service_rect.y() + 5)
+                    text_item.setPos(overlapping_service_rect.rect().topLeft() + QPoint(5, 5))
                     text_item.setFont(QFont("Arial", 8))
 
                     # Add tooltip for each overlapping service
