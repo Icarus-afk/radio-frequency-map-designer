@@ -5,13 +5,13 @@ from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
 from PyQt5.QtCore import Qt, QRectF, QPoint
 from PyQt5 import QtPrintSupport
 
-
 class RFService:
     def __init__(self, name, start, end, color):
         self.name = name
         self.start = start
         self.end = end
         self.color = color
+
 
 class RFAllocationTable(QMainWindow):
     def __init__(self):
@@ -28,7 +28,6 @@ class RFAllocationTable(QMainWindow):
         self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100,
                                        self.rf_spectrum_rect.height() + 100)
         self.rf_map_view.setScene(self.rf_map_scene)
-        self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Enable horizontal scrolling
 
         self.rf_services = []
 
@@ -89,11 +88,6 @@ class RFAllocationTable(QMainWindow):
         file_menu.addAction(self.load_action)
         file_menu.addAction(self.export_image_action)
         file_menu.addAction(self.print_action)
-        
-        edit_menu = self.menuBar().addMenu("Edit")
-        edit_menu.addAction(self.edit_service_action)
-        edit_menu.addAction(self.delete_service_action)
-
 
     def add_service(self):
         service_name = self.service_name_edit.text()
@@ -176,8 +170,11 @@ class RFAllocationTable(QMainWindow):
                     tooltip_text = f"Name: {overlapping_service.name}\nStart Frequency: {overlapping_service.start}\nEnd Frequency: {overlapping_service.end}"
                     overlapping_service_rect.setToolTip(tooltip_text)
 
+                    box_y += box_height
+
     def resizeEvent(self, event):
-        self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100, self.rf_spectrum_rect.height() + 100)
+        self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100,
+                                       self.rf_spectrum_rect.height() + 100)
         super().resizeEvent(event)
 
     def save_file(self):
@@ -245,7 +242,7 @@ class RFAllocationTable(QMainWindow):
     def print_table(self):
         printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
         dialog = QtPrintSupport.QPrintDialog(printer, self)
-        if dialog.exec_() == QtPrintSupport.QPrintDialog.Accepted:
+        if dialog.exec() == QtPrintSupport.QPrintDialog.Accepted:
             painter = QPainter(printer)
             painter.setRenderHint(QPainter.Antialiasing)
             self.rf_map_view.render(painter)
@@ -255,38 +252,20 @@ class RFAllocationTable(QMainWindow):
 class CustomGraphicsView(QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
-        self.tooltips = []
+        self.setMouseTracking(True)
 
     def mouseMoveEvent(self, event):
         position = event.pos()
         tooltip_text = ""
-        for tooltip_item in self.tooltips:
-            if tooltip_item.rect().contains(position):
-                tooltip_text = tooltip_item.tooltip()
+        for item in self.scene().items():
+            if isinstance(item, QGraphicsRectItem) and item.rect().contains(position):
+                tooltip_text = item.toolTip()
                 break
         QToolTip.showText(event.globalPos(), tooltip_text, self)
-
-
-class TooltipItem(QGraphicsRectItem):
-    def __init__(self, rect, tooltip):
-        super().__init__(rect)
-        self.setBrush(Qt.NoBrush)
-        self.setAcceptHoverEvents(True)
-        self.setToolTip(tooltip)
-        self.rect = rect
-        self.tooltip = tooltip
-
-    def hoverEnterEvent(self, event):
-        self.setBrush(Qt.lightGray)
-        self.setCursor(Qt.PointingHandCursor)
-
-    def hoverLeaveEvent(self, event):
-        self.setBrush(Qt.NoBrush)
-        self.setCursor(Qt.ArrowCursor)
 
 
 if __name__ == "__main__":
     app = QApplication([])
     rf_allocation_table = RFAllocationTable()
     rf_allocation_table.show()
-    app.exec_()
+    app.exec()
