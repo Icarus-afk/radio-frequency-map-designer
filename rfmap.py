@@ -1,8 +1,8 @@
 import json
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, \
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip
+    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip, QScrollBar
 from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
-from PyQt5.QtCore import Qt, QRectF, QPoint
+from PyQt5.QtCore import Qt, QRectF, QPoint, QPointF
 from PyQt5 import QtPrintSupport
 
 
@@ -19,16 +19,22 @@ class RFAllocationTable(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("National Radio Frequency Allocation Table")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1000, 600)
 
         self.rf_map_scene = QGraphicsScene(self)
         self.rf_map_view = CustomGraphicsView(self.rf_map_scene)
         self.setCentralWidget(self.rf_map_view)
 
-        self.rf_spectrum_rect = QRectF(50, 50, 700, 300)
-        self.rf_map_scene.setSceneRect(0, 0, self.rf_spectrum_rect.width() + 100,
-                                       self.rf_spectrum_rect.height() + 100)
+        self.rf_spectrum_rect = QRectF(50, 50, 18000, 300)
+        self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height() + 100)
+
+        self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.rf_map_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        # self.rf_map_view.setFixedWidth(1000)
+        # self.rf_map_view.setFixedHeight(500)
+
         self.rf_map_view.setScene(self.rf_map_scene)
+        self.rf_map_view.setSceneRect(self.rf_map_scene.sceneRect())
 
         self.rf_services = []
 
@@ -174,9 +180,9 @@ class RFAllocationTable(QMainWindow):
                     box_y += box_height
 
     def resizeEvent(self, event):
-        self.rf_map_scene.setSceneRect(self.rf_map_scene.itemsBoundingRect())
+        self.rf_map_scene.setSceneRect(0, 0, 10000, self.rf_spectrum_rect.height() + 100)
+        self.rf_map_view.setSceneRect(self.rf_map_scene.sceneRect())
         super().resizeEvent(event)
-
 
     def save_file(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "radio map (*.rfmap)")
@@ -254,15 +260,12 @@ class CustomGraphicsView(QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
         self.setMouseTracking(True)
-
-    def mouseMoveEvent(self, event):
-        position = event.pos()
-        tooltip_text = ""
-        for item in self.scene().items():
-            if isinstance(item, QGraphicsRectItem) and item.rect().contains(position):
-                tooltip_text = item.toolTip()
-                break
-        QToolTip.showText(event.globalPos(), tooltip_text, self)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setRenderHint(QPainter.TextAntialiasing)
+        self.setRenderHint(QPainter.SmoothPixmapTransform)
 
     def wheelEvent(self, event):
         modifiers = QApplication.keyboardModifiers()
@@ -274,6 +277,7 @@ class CustomGraphicsView(QGraphicsView):
         else:
             # Perform default vertical scrolling
             super().wheelEvent(event)
+
 
 if __name__ == "__main__":
     app = QApplication([])
