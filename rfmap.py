@@ -1,6 +1,6 @@
 import json
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, \
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip, QScrollBar
+    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip, QScrollBar, QComboBox
 from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
 from PyQt5.QtCore import Qt, QRectF, QPoint, QPointF
 from PyQt5 import QtPrintSupport
@@ -25,7 +25,7 @@ class RFAllocationTable(QMainWindow):
         self.rf_map_view = CustomGraphicsView(self.rf_map_scene)
         self.setCentralWidget(self.rf_map_view)
 
-        self.rf_spectrum_rect = QRectF(50, 50, 18000, 300)
+        self.rf_spectrum_rect = QRectF(50, 50, 20000, 300)
         self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height() + 100)
 
         self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -49,19 +49,26 @@ class RFAllocationTable(QMainWindow):
 
         self.start_frequency_label = QLabel("Start Frequency:")
         self.start_frequency_edit = QLineEdit()
+        self.start_frequency_unit_combo = QComboBox()
+        self.start_frequency_unit_combo.addItem("MHz")
+        self.start_frequency_unit_combo.addItem("GHz")
         self.input_layout.addWidget(self.start_frequency_label)
         self.input_layout.addWidget(self.start_frequency_edit)
+        self.input_layout.addWidget(self.start_frequency_unit_combo)
 
         self.end_frequency_label = QLabel("End Frequency:")
         self.end_frequency_edit = QLineEdit()
+        self.end_frequency_unit_combo = QComboBox()
+        self.end_frequency_unit_combo.addItem("MHz")
+        self.end_frequency_unit_combo.addItem("GHz")
         self.input_layout.addWidget(self.end_frequency_label)
         self.input_layout.addWidget(self.end_frequency_edit)
+        self.input_layout.addWidget(self.end_frequency_unit_combo)
+
 
         self.add_service_button = QPushButton("Add Service")
         self.add_service_button.clicked.connect(self.add_service)
         self.input_layout.addWidget(self.add_service_button)
-
-        self.input_layout.addStretch()
 
         self.input_widget.setMaximumWidth(200)
         toolbar = self.addToolBar("Input Fields")
@@ -101,6 +108,14 @@ class RFAllocationTable(QMainWindow):
         start_frequency = float(self.start_frequency_edit.text())
         end_frequency = float(self.end_frequency_edit.text())
 
+        start_frequency_unit = self.start_frequency_unit_combo.currentText()
+        end_frequency_unit = self.end_frequency_unit_combo.currentText()
+
+        if start_frequency_unit == "GHz":
+            start_frequency *= 1000  # Convert GHz to MHz
+
+        if end_frequency_unit == "GHz":
+            end_frequency *= 1000
         color = QColorDialog.getColor()
         if color.isValid():
             service_color = color
