@@ -1,14 +1,18 @@
-from setuptools import setup
+from cx_Freeze import setup, Executable
 
-setup(
-    name='radio-frequency-chart-designer',
-    version='1.0',
-    description='Radio Frequency Chart Designer',
-    author='Ehasan Ahmed',
-    author_email='ahmed.ehsan1258@gmail.com',
-    packages=['radio-frequency-chart-designer'],  # Replace 'your_package_name' with the actual name of your package
-    install_requires=[
-        'pyqt5',
-        'pyqt5.qtprintsupport'
-    ],
-)
+# Dependencies are automatically detected, but it might need
+# fine tuning.
+build_options = {'packages': [], 'excludes': []}
+
+import sys
+base = 'Win32GUI' if sys.platform=='win32' else None
+
+executables = [
+    Executable('rfmap.py', base=base, target_name = 'rfmap.exe')
+]
+
+setup(name='Radio-Frequency-Chart-Designer',
+      version = '1.0.1',
+      description = '',
+      options = {'build_exe': build_options},
+      executables = executables)
