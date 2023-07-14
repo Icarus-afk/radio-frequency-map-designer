@@ -30,8 +30,6 @@ class RFAllocationTable(QMainWindow):
 
         self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.rf_map_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        # self.rf_map_view.setFixedWidth(1000)
-        # self.rf_map_view.setFixedHeight(500)
 
         self.rf_map_view.setScene(self.rf_map_scene)
         self.rf_map_view.setSceneRect(self.rf_map_scene.sceneRect())
@@ -65,7 +63,6 @@ class RFAllocationTable(QMainWindow):
         self.input_layout.addWidget(self.end_frequency_edit)
         self.input_layout.addWidget(self.end_frequency_unit_combo)
 
-
         self.add_service_button = QPushButton("Add Service")
         self.add_service_button.clicked.connect(self.add_service)
         self.input_layout.addWidget(self.add_service_button)
@@ -96,12 +93,19 @@ class RFAllocationTable(QMainWindow):
         self.rf_map_view.setMouseTracking(True)
         self.rf_map_view.viewport().setMouseTracking(True)
 
+        self.selected_service_index = -1
+
     def create_menus(self):
         file_menu = self.menuBar().addMenu("File")
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.load_action)
         file_menu.addAction(self.export_image_action)
         file_menu.addAction(self.print_action)
+
+        edit_menu = self.menuBar().addMenu("Edit")
+        edit_menu.addAction(self.edit_service_action)
+        edit_menu.addAction(self.delete_service_action)
+        
 
     def add_service(self):
         service_name = self.service_name_edit.text()
@@ -116,6 +120,7 @@ class RFAllocationTable(QMainWindow):
 
         if end_frequency_unit == "GHz":
             end_frequency *= 1000
+
         color = QColorDialog.getColor()
         if color.isValid():
             service_color = color
@@ -126,17 +131,6 @@ class RFAllocationTable(QMainWindow):
             service = RFService(service_name, start_frequency, end_frequency, service_color)
             self.rf_services.append(service)
             self.update_rf_map()
-            
-    def wheelEvent(self, event):
-        modifiers = QApplication.keyboardModifiers()
-        if modifiers == Qt.ControlModifier:
-            # Enable zooming when holding the Ctrl key and scrolling
-            zoom_factor = 1.05 if event.angleDelta().y() > 0 else 0.95  # Adjust the zoom factor as desired
-            self.rf_map_view.scale(zoom_factor, zoom_factor)
-        else:
-            # Perform default vertical scrolling
-            super().wheelEvent(event)
-
 
     def update_rf_map(self):
         self.rf_map_scene.clear()
@@ -245,25 +239,32 @@ class RFAllocationTable(QMainWindow):
                 self.update_rf_map()
 
     def edit_service(self):
-        selected_items = self.rf_map_scene.selectedItems()
-        if len(selected_items) > 0:
-            item = selected_items[0]
-            index = self.rf_map_scene.items().index(item)
-            service = self.rf_services[index]
-            self.service_name_edit.setText(service.name)
-            self.start_frequency_edit.setText(str(service.start))
-            self.end_frequency_edit.setText(str(service.end))
+        if self.selected_service_index != -1:
+            service = self.rf_services[self.selected_service_index]
+            service.name = self.service_name_edit.text()
+            service.start = float(self.start_frequency_edit.text())
+            service.end = float(self.end_frequency_edit.text())
+
+            start_frequency_unit = self.start_frequency_unit_combo.currentText()
+            end_frequency_unit = self.end_frequency_unit_combo.currentText()
+
+            if start_frequency_unit == "GHz":
+                service.start *= 1000  # Convert GHz to MHz
+
+            if end_frequency_unit == "GHz":
+                service.end *= 1000
+
             color = QColorDialog.getColor(service.color)
             if color.isValid():
                 service.color = color
+
             self.update_rf_map()
 
     def delete_service(self):
-        selected_items = self.rf_map_scene.selectedItems()
-        if len(selected_items) > 0:
-            item = selected_items[0]
-            index = self.rf_map_scene.items().index(item)
-            self.rf_services.pop(index)
+        if self.selected_service_index != -1:
+            self.rf_services.pop(self.selected_service_index)
+            self.selected_service_index = -1
+            self.clear_input_fields()
             self.update_rf_map()
 
     def export_image(self):
@@ -280,6 +281,39 @@ class RFAllocationTable(QMainWindow):
             painter.setRenderHint(QPainter.Antialiasing)
             self.rf_map_view.render(painter)
             painter.end()
+
+    def clear_input_fields(self):
+        self.service_name_edit.clear()
+        self.start_frequency_edit.clear()
+        self.end_frequency_edit.clear()
+
+    def update_input_fields(self):
+        if self.selected_service_index != -1:
+            service = self.rf_services[self.selected_service_index]
+            self.service_name_edit.setText(service.name)
+            self.start_frequency_edit.setText(str(service.start))
+            self.end_frequency_edit.setText(str(service.end))
+
+    def item_selection_changed(self):
+        selected_items = self.rf_map_scene.selectedItems()
+        if len(selected_items) > 0:
+            item = selected_items[0]
+            index = self.rf_map_scene.items().index(item)
+            self.selected_service_index = index
+            self.update_input_fields()
+        else:
+            self.selected_service_index = -1
+            self.clear_input_fields()
+
+    def wheelEvent(self, event):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier:
+            # Enable zooming when holding the Ctrl key and scrolling
+            zoom_factor = 1.05 if event.angleDelta().y() > 0 else 0.95  # Adjust the zoom factor as desired
+            self.rf_map_view.scale(zoom_factor, zoom_factor)
+        else:
+            # Perform default vertical scrolling
+            super().wheelEvent(event)
 
 
 class CustomGraphicsView(QGraphicsView):
