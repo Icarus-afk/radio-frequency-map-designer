@@ -126,6 +126,17 @@ class RFAllocationTable(QMainWindow):
             service = RFService(service_name, start_frequency, end_frequency, service_color)
             self.rf_services.append(service)
             self.update_rf_map()
+            
+    def wheelEvent(self, event):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier:
+            # Enable zooming when holding the Ctrl key and scrolling
+            zoom_factor = 1.05 if event.angleDelta().y() > 0 else 0.95  # Adjust the zoom factor as desired
+            self.rf_map_view.scale(zoom_factor, zoom_factor)
+        else:
+            # Perform default vertical scrolling
+            super().wheelEvent(event)
+
 
     def update_rf_map(self):
         self.rf_map_scene.clear()
