@@ -1,7 +1,7 @@
 import json
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, \
     QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip, QScrollBar, QComboBox
-from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
+from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap, QPalette
 from PyQt5.QtCore import Qt, QRectF, QPoint, QPointF
 from PyQt5 import QtPrintSupport
 
@@ -18,8 +18,14 @@ class RFAllocationTable(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # Set the application palette
+        palette = QPalette()
+        palette.setColor(QPalette.Window, Qt.white)
+        palette.setColor(QPalette.WindowText, Qt.black)
+        self.setPalette(palette)
+
         self.setWindowTitle("National Radio Frequency Allocation Table")
-        self.setGeometry(100, 100, 1000, 600)
+        self.setGeometry(100, 100, 1000, 6000)
 
         self.rf_map_scene = QGraphicsScene(self)
         self.rf_map_view = CustomGraphicsView(self.rf_map_scene)
@@ -42,29 +48,30 @@ class RFAllocationTable(QMainWindow):
 
         self.service_name_label = QLabel("Service Name:")
         self.service_name_edit = QLineEdit()
-        self.input_layout.addWidget(self.service_name_label)
-        self.input_layout.addWidget(self.service_name_edit)
 
         self.start_frequency_label = QLabel("Start Frequency:")
         self.start_frequency_edit = QLineEdit()
         self.start_frequency_unit_combo = QComboBox()
         self.start_frequency_unit_combo.addItem("MHz")
         self.start_frequency_unit_combo.addItem("GHz")
-        self.input_layout.addWidget(self.start_frequency_label)
-        self.input_layout.addWidget(self.start_frequency_edit)
-        self.input_layout.addWidget(self.start_frequency_unit_combo)
 
         self.end_frequency_label = QLabel("End Frequency:")
         self.end_frequency_edit = QLineEdit()
         self.end_frequency_unit_combo = QComboBox()
         self.end_frequency_unit_combo.addItem("MHz")
         self.end_frequency_unit_combo.addItem("GHz")
-        self.input_layout.addWidget(self.end_frequency_label)
-        self.input_layout.addWidget(self.end_frequency_edit)
-        self.input_layout.addWidget(self.end_frequency_unit_combo)
 
         self.add_service_button = QPushButton("Add Service")
         self.add_service_button.clicked.connect(self.add_service)
+
+        self.input_layout.addWidget(self.service_name_label)
+        self.input_layout.addWidget(self.service_name_edit)
+        self.input_layout.addWidget(self.start_frequency_label)
+        self.input_layout.addWidget(self.start_frequency_edit)
+        self.input_layout.addWidget(self.start_frequency_unit_combo)
+        self.input_layout.addWidget(self.end_frequency_label)
+        self.input_layout.addWidget(self.end_frequency_edit)
+        self.input_layout.addWidget(self.end_frequency_unit_combo)
         self.input_layout.addWidget(self.add_service_button)
 
         self.input_widget.setMaximumWidth(200)
@@ -96,6 +103,23 @@ class RFAllocationTable(QMainWindow):
         self.selected_service_index = -1
 
     def create_menus(self):
+        # Set the stylesheet for the menu bar
+        self.menuBar().setStyleSheet(
+            """
+            QMenuBar {
+                background-color: #f2f2f2;
+                color: #000000;
+                font-weight: bold;
+            }
+            QMenuBar::item {
+                background-color: transparent;
+            }
+            QMenuBar::item:selected {
+                background-color: #dddddd;
+            }
+            """
+        )
+
         file_menu = self.menuBar().addMenu("File")
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.load_action)
@@ -105,7 +129,6 @@ class RFAllocationTable(QMainWindow):
         edit_menu = self.menuBar().addMenu("Edit")
         edit_menu.addAction(self.edit_service_action)
         edit_menu.addAction(self.delete_service_action)
-        
 
     def add_service(self):
         service_name = self.service_name_edit.text()
@@ -135,13 +158,15 @@ class RFAllocationTable(QMainWindow):
     def update_rf_map(self):
         self.rf_map_scene.clear()
 
+        rf_spectrum_width = self.rf_spectrum_rect.width()
+
         for service in self.rf_services:
-            normalized_start = (service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
-            normalized_end = (service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
-            box_width = (normalized_end - normalized_start) * self.rf_spectrum_rect.width()
+            normalized_start = (service.start - self.rf_spectrum_rect.x()) / rf_spectrum_width
+            normalized_end = (service.end - self.rf_spectrum_rect.x()) / rf_spectrum_width
+            box_width = (normalized_end - normalized_start) * rf_spectrum_width
 
             service_rect = QGraphicsRectItem(
-                self.rf_spectrum_rect.x() + normalized_start * self.rf_spectrum_rect.width(),
+                self.rf_spectrum_rect.x() + normalized_start * rf_spectrum_width,
                 self.rf_spectrum_rect.y(),
                 box_width,
                 self.rf_spectrum_rect.height()
@@ -173,14 +198,14 @@ class RFAllocationTable(QMainWindow):
 
                 for overlapping_service in overlapping_services:
                     overlapping_normalized_start = (
-                            overlapping_service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+                            overlapping_service.start - self.rf_spectrum_rect.x()) / rf_spectrum_width
                     overlapping_normalized_end = (
-                            overlapping_service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+                            overlapping_service.end - self.rf_spectrum_rect.x()) / rf_spectrum_width
                     overlapping_box_width = (
-                            overlapping_normalized_end - overlapping_normalized_start) * self.rf_spectrum_rect.width()
+                            overlapping_normalized_end - overlapping_normalized_start) * rf_spectrum_width
 
                     overlapping_service_rect = QGraphicsRectItem(
-                        self.rf_spectrum_rect.x() + overlapping_normalized_start * self.rf_spectrum_rect.width(),
+                        self.rf_spectrum_rect.x() + overlapping_normalized_start * rf_spectrum_width,
                         box_y,
                         overlapping_box_width,
                         box_height
@@ -200,7 +225,7 @@ class RFAllocationTable(QMainWindow):
                     box_y += box_height
 
     def resizeEvent(self, event):
-        self.rf_map_scene.setSceneRect(0, 0, 10000, self.rf_spectrum_rect.height() + 100)
+        self.rf_map_scene.setSceneRect(0, 0, 400000, self.rf_spectrum_rect.height() + 100)
         self.rf_map_view.setSceneRect(self.rf_map_scene.sceneRect())
         super().resizeEvent(event)
 
@@ -342,5 +367,53 @@ class CustomGraphicsView(QGraphicsView):
 if __name__ == "__main__":
     app = QApplication([])
     rf_allocation_table = RFAllocationTable()
+
+    # Set the stylesheet for the input fields, buttons, and scene view
+    rf_allocation_table.service_name_edit.setStyleSheet(
+        """
+        QLineEdit {
+            border: 1px solid #999999;
+            padding: 5px;
+        }
+        """
+    )
+    rf_allocation_table.start_frequency_edit.setStyleSheet(
+        """
+        QLineEdit {
+            border: 1px solid #999999;
+            padding: 5px;
+        }
+        """
+    )
+    rf_allocation_table.end_frequency_edit.setStyleSheet(
+        """
+        QLineEdit {
+            border: 1px solid #999999;
+            padding: 5px;
+        }
+        """
+    )
+    rf_allocation_table.add_service_button.setStyleSheet(
+        """
+        QPushButton {
+            background-color: #0088cc;
+            color: #ffffff;
+            border: none;
+            padding: 8px;
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background-color: #005580;
+        }
+        """
+    )
+    rf_allocation_table.rf_map_view.setStyleSheet(
+        """
+        QGraphicsView {
+            border: 1px solid #999999;
+        }
+        """
+    )
+
     rf_allocation_table.show()
     app.exec()
