@@ -1,0 +1,151 @@
+{
+    "services": [
+        {
+            "name": "TV Broadcasting",
+            "start": 470,
+            "end": 710,
+            "frequency_unit": "MHz",
+            "color": "#55aaff"
+        },
+        {
+            "name": "Mobile Services",
+            "start": 880,
+            "end": 915,
+            "frequency_unit": "MHz",
+            "color": "#aaaaff"
+        },
+        {
+            "name": "Wireless Communications",
+            "start": 1710,
+            "end": 1880,
+            "frequency_unit": "MHz",
+            "color": "#ff5500"
+        },
+        {
+            "name": "Satellite Communications",
+            "start": 5850,
+            "end": 6425,
+            "frequency_unit": "MHz",
+            "color": "#ffff00"
+        },
+        {
+            "name": "WiFi",
+            "start": 2400,
+            "end": 2483.5,
+            "frequency_unit": "MHz",
+            "color": "#ffaa7f"
+        },
+        {
+            "name": "Bluetooth",
+            "start": 2402,
+            "end": 2480,
+            "frequency_unit": "MHz",
+            "color": "#aaff7f"
+        },
+        {
+            "name": "Radar",
+            "start": 9600,
+            "end": 12150,
+            "frequency_unit": "MHz",
+            "color": "#aa0000"
+        },
+        {
+            "name": "Weather Sensors",
+            "start": 16750,
+            "end": 16800,
+            "frequency_unit": "MHz",
+            "color": "#aa557f"
+        },
+        {
+            "name": "Astronomical Observations",
+            "start": 22000,
+            "end": 40000,
+            "frequency_unit": "MHz",
+            "color": "#81ffc0"
+        },
+        {
+            "name": "Emergency Services",
+            "start": 380,
+            "end": 400,
+            "frequency_unit": "MHz",
+            "color": "#0055ff"
+        },
+        {
+            "name": "Maritime Communication",
+            "start": 156,
+            "end": 162,
+            "frequency_unit": "MHz",
+            "color": "#aaaa00"
+        },
+        {
+            "name": "Radio Astronomy",
+            "start": 100,
+            "end": 1000,
+            "frequency_unit": "MHz",
+            "color": "#aa00aa"
+        },
+        {
+            "name": "Satellite Navigation",
+            "start": 1559,
+            "end": 1610,
+            "frequency_unit": "MHz",
+            "color": "#00aa00"
+        },
+        {
+            "name": "Amateur Radio",
+            "start": 135.7,
+            "end": 137.8,
+            "frequency_unit": "MHz",
+            "color": "#ff00ff"
+        },
+        {
+            "name": "Meteorological Aids",
+            "start": 403,
+            "end": 450,
+            "frequency_unit": "MHz",
+            "color": "#00ffff"
+        },
+        {
+            "name": "Satellite Remote Sensing",
+            "start": 1400,
+            "end": 1427,
+            "frequency_unit": "MHz",
+            "color": "#ff8000"
+        },
+        {
+            "name": "Global Navigation Satellite System",
+            "start": 1559,
+            "end": 1610,
+            "frequency_unit": "MHz",
+            "color": "#00ff80"
+        },
+        {
+            "name": "Space Research",
+            "start": 136,
+            "end": 138,
+            "frequency_unit": "MHz",
+            "color": "#8000ff"
+        },
+        {
+            "name": "Fixed Satellite Service",
+            "start": 5850,
+            "end": 6425,
+            "frequency_unit": "MHz",
+            "color": "#ff0080"
+        },
+        {
+            "name": "Mobile Satellite Service",
+            "start": 1616,
+            "end": 1626.5,
+            "frequency_unit": "MHz",
+            "color": "#80ff00"
+        },
+        {
+            "name": "Earth Exploration Satellite Service",
+            "start": 8025,
+            "end": 8400,
+            "frequency_unit": "MHz",
+            "color": "#0080ff"
+        }
+    ]
+}

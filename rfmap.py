@@ -32,7 +32,7 @@ class RFAllocationTable(QMainWindow):
         self.setCentralWidget(self.rf_map_view)
 
         self.rf_spectrum_rect = QRectF(3, 0, 300000000, 300)        
-        self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height() +10 )
+        self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height()+10 )
 
         self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.rf_map_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -170,7 +170,7 @@ class RFAllocationTable(QMainWindow):
         for service in self.rf_services:
             normalized_start = (service.start - self.rf_spectrum_rect.x()) / rf_spectrum_width
             normalized_end = (service.end - self.rf_spectrum_rect.x()) / rf_spectrum_width
-            box_width = (normalized_end - normalized_start) * rf_spectrum_width * 4 # Adjust the scaling factor as needed
+            box_width = (normalized_end - normalized_start) * rf_spectrum_width
 
             service_rect = QGraphicsRectItem(
                 self.rf_spectrum_rect.x() + normalized_start * rf_spectrum_width,
@@ -429,7 +429,7 @@ if __name__ == "__main__":
     rf_allocation_table.rf_map_view.setStyleSheet(
         """
         QGraphicsView {
-            border: 1px solid #999999;
+            border: 0px solid #999999;
         }
         """
     )
