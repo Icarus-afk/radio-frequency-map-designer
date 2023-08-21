@@ -31,8 +31,8 @@ class RFAllocationTable(QMainWindow):
         self.rf_map_view = CustomGraphicsView(self.rf_map_scene)
         self.setCentralWidget(self.rf_map_view)
 
-        self.rf_spectrum_rect = QRectF(3, 0, 300000000000, 300)        
-        self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height()+10 )
+        self.rf_spectrum_rect = QRectF(3, 0, 300000000, 300)        
+        self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height() +10 )
 
         self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.rf_map_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -48,7 +48,7 @@ class RFAllocationTable(QMainWindow):
 
         self.service_name_label = QLabel("Service Name:")
         self.service_name_edit = QLineEdit()
-        self.frequency_units = ["Hz", "KHz", "MHz", "GHz"]
+        self.frequency_units = ["KHz", "MHz", "GHz"]
         self.start_frequency_label = QLabel("Start Frequency:")
         self.start_frequency_edit = QLineEdit()
         self.start_frequency_unit_combo = QComboBox()
@@ -138,18 +138,18 @@ class RFAllocationTable(QMainWindow):
         end_frequency_unit = self.end_frequency_unit_combo.currentText()
 
         if start_frequency_unit == "KHz":
-            start_frequency *= 1000  # Convert KHz to Hz
+            start_frequency *= 1  # Convert KHz to Hz
         elif start_frequency_unit == "MHz":
-            start_frequency *= 1000000  # Convert MHz to Hz
+            start_frequency *= 1000  # Convert MHz to Hz
         elif start_frequency_unit == "GHz":
-            start_frequency *= 1000000000  # Convert GHz to Hz
+            start_frequency *= 1000000  # Convert GHz to Hz
 
         if end_frequency_unit == "KHz":
-            end_frequency *= 1000
+            end_frequency *= 1
         elif end_frequency_unit == "MHz":
-            end_frequency *= 1000000
+            end_frequency *= 1000
         elif end_frequency_unit == "GHz":
-            end_frequency *= 1000000000
+            end_frequency *= 1000000
             
         color = QColorDialog.getColor()
         if color.isValid():
@@ -170,7 +170,7 @@ class RFAllocationTable(QMainWindow):
         for service in self.rf_services:
             normalized_start = (service.start - self.rf_spectrum_rect.x()) / rf_spectrum_width
             normalized_end = (service.end - self.rf_spectrum_rect.x()) / rf_spectrum_width
-            box_width = (normalized_end - normalized_start) * rf_spectrum_width
+            box_width = (normalized_end - normalized_start) * rf_spectrum_width * 4 # Adjust the scaling factor as needed
 
             service_rect = QGraphicsRectItem(
                 self.rf_spectrum_rect.x() + normalized_start * rf_spectrum_width,
@@ -285,18 +285,18 @@ class RFAllocationTable(QMainWindow):
             end_frequency_unit = self.end_frequency_unit_combo.currentText()
 
             if start_frequency_unit == "KHz":
-                service.start *= 1000  # Convert KHz to Hz
+                service.start *= 1  # Convert KHz to Hz
             elif start_frequency_unit == "MHz":
-                service.start *= 1000000  # Convert MHz to Hz
+                service.start *= 1000  # Convert MHz to Hz
             elif start_frequency_unit == "GHz":
-                service.start *= 1000000000  # Convert GHz to Hz
+                service.start *= 1000000  # Convert GHz to Hz
 
             if end_frequency_unit == "KHz":
-                service.end *= 1000
+                service.end *= 1
             elif end_frequency_unit == "MHz":
-                service.end *= 1000000
+                service.end *= 1000
             elif end_frequency_unit == "GHz":
-                service.end *= 1000000000
+                service.end *= 1000000
 
             color = QColorDialog.getColor(service.color)
             if color.isValid():
