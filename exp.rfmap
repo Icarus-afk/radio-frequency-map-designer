@@ -1,151 +1,277 @@
 {
     "services": [
         {
-            "name": "TV Broadcasting",
+            "name": "Alpha Broadcast",
             "start": 470,
             "end": 710,
             "frequency_unit": "MHz",
             "color": "#55aaff"
         },
         {
-            "name": "Mobile Services",
+            "name": "Mobile Connect",
             "start": 880,
             "end": 915,
             "frequency_unit": "MHz",
             "color": "#aaaaff"
         },
         {
-            "name": "Wireless Communications",
+            "name": "WirelessNet",
             "start": 1710,
             "end": 1880,
             "frequency_unit": "MHz",
             "color": "#ff5500"
         },
         {
-            "name": "Satellite Communications",
+            "name": "SatCom Direct",
             "start": 5850,
             "end": 6425,
             "frequency_unit": "MHz",
             "color": "#ffff00"
         },
         {
-            "name": "WiFi",
+            "name": "WiFiHub",
             "start": 2400,
             "end": 2483.5,
             "frequency_unit": "MHz",
             "color": "#ffaa7f"
         },
         {
-            "name": "Bluetooth",
+            "name": "BlueWave",
             "start": 2402,
             "end": 2480,
             "frequency_unit": "MHz",
             "color": "#aaff7f"
         },
         {
-            "name": "Radar",
+            "name": "RadarLink",
             "start": 9600,
             "end": 12150,
             "frequency_unit": "MHz",
             "color": "#aa0000"
         },
         {
-            "name": "Weather Sensors",
+            "name": "WeatherWave",
             "start": 16750,
             "end": 16800,
             "frequency_unit": "MHz",
             "color": "#aa557f"
         },
         {
-            "name": "Astronomical Observations",
+            "name": "StellarScan",
             "start": 22000,
             "end": 40000,
             "frequency_unit": "MHz",
             "color": "#81ffc0"
         },
         {
-            "name": "Emergency Services",
+            "name": "RescueLink",
             "start": 380,
             "end": 400,
             "frequency_unit": "MHz",
             "color": "#0055ff"
         },
         {
-            "name": "Maritime Communication",
+            "name": "SeaComm",
             "start": 156,
             "end": 162,
             "frequency_unit": "MHz",
             "color": "#aaaa00"
         },
         {
-            "name": "Radio Astronomy",
+            "name": "AstroWave",
             "start": 100,
             "end": 1000,
             "frequency_unit": "MHz",
             "color": "#aa00aa"
         },
         {
-            "name": "Satellite Navigation",
+            "name": "SatNav",
             "start": 1559,
             "end": 1610,
             "frequency_unit": "MHz",
             "color": "#00aa00"
         },
         {
-            "name": "Amateur Radio",
+            "name": "HobbyHam",
             "start": 135.7,
             "end": 137.8,
             "frequency_unit": "MHz",
             "color": "#ff00ff"
         },
         {
-            "name": "Meteorological Aids",
+            "name": "WeatherWatch",
             "start": 403,
             "end": 450,
             "frequency_unit": "MHz",
             "color": "#00ffff"
         },
         {
-            "name": "Satellite Remote Sensing",
+            "name": "SatSense",
             "start": 1400,
             "end": 1427,
             "frequency_unit": "MHz",
             "color": "#ff8000"
         },
         {
-            "name": "Global Navigation Satellite System",
+            "name": "GlobalNav",
             "start": 1559,
             "end": 1610,
             "frequency_unit": "MHz",
             "color": "#00ff80"
         },
         {
-            "name": "Space Research",
+            "name": "CosmoProbe",
             "start": 136,
             "end": 138,
             "frequency_unit": "MHz",
             "color": "#8000ff"
         },
         {
-            "name": "Fixed Satellite Service",
+            "name": "SatLink",
             "start": 5850,
             "end": 6425,
             "frequency_unit": "MHz",
             "color": "#ff0080"
         },
         {
-            "name": "Mobile Satellite Service",
+            "name": "MobileSat",
             "start": 1616,
             "end": 1626.5,
             "frequency_unit": "MHz",
             "color": "#80ff00"
         },
         {
-            "name": "Earth Exploration Satellite Service",
+            "name": "EarthSatSense",
             "start": 8025,
             "end": 8400,
             "frequency_unit": "MHz",
             "color": "#0080ff"
+        },
+        {
+            "name": "Radio Pulse",
+            "start": 9400,
+            "end": 9750,
+            "frequency_unit": "MHz",
+            "color": "#ff00ff"
+        },
+        {
+            "name": "TechComm",
+            "start": 880,
+            "end": 915,
+            "frequency_unit": "MHz",
+            "color": "#aaaaff"
+        },
+        {
+            "name": "NanoSatCom",
+            "start": 6000,
+            "end": 6150,
+            "frequency_unit": "MHz",
+            "color": "#ff5500"
+        },
+        {
+            "name": "WeatherWave",
+            "start": 16750,
+            "end": 16800,
+            "frequency_unit": "MHz",
+            "color": "#aa557f"
+        },
+        {
+            "name": "SpaceNet",
+            "start": 22000,
+            "end": 22500,
+            "frequency_unit": "MHz",
+            "color": "#81ffc0"
+        },
+        {
+            "name": "CommWave",
+            "start": 380,
+            "end": 400,
+            "frequency_unit": "MHz",
+            "color": "#0055ff"
+        },
+        {
+            "name": "SeaLink",
+            "start": 156,
+            "end": 162,
+            "frequency_unit": "MHz",
+            "color": "#aaaa00"
+        },
+        {
+            "name": "Radio Astral",
+            "start": 900,
+            "end": 1200,
+            "frequency_unit": "MHz",
+            "color": "#aa00aa"
+        },
+        {
+            "name": "NavSat",
+            "start": 1559,
+            "end": 1610,
+            "frequency_unit": "MHz",
+            "color": "#00aa00"
+        },
+        {
+            "name": "HobbyNet",
+            "start": 135.7,
+            "end": 137.8,
+            "frequency_unit": "MHz",
+            "color": "#ff00ff"
+        },
+        {
+            "name": "WeatherWave",
+            "start": 403,
+            "end": 450,
+            "frequency_unit": "MHz",
+            "color": "#00ffff"
+        },
+        {
+            "name": "SatSense",
+            "start": 1400,
+            "end": 1427,
+            "frequency_unit": "MHz",
+            "color": "#ff8000"
+        },
+        {
+            "name": "GlobalNav",
+            "start": 1559,
+            "end": 1610,
+            "frequency_unit": "MHz",
+            "color": "#00ff80"
+        },
+        {
+            "name": "CosmoProbe",
+            "start": 136,
+            "end": 138,
+            "frequency_unit": "MHz",
+            "color": "#8000ff"
+        },
+        {
+            "name": "WaveLink",
+            "start": 5700,
+            "end": 6000,
+            "frequency_unit": "MHz",
+            "color": "#ff0080"
+        },
+        {
+            "name": "MobileSat",
+            "start": 1616,
+            "end": 1626.5,
+            "frequency_unit": "MHz",
+            "color": "#80ff00"
+        },
+        {
+            "name": "EarthSense",
+            "start": 8000,
+            "end": 8400,
+            "frequency_unit": "MHz",
+            "color": "#0080ff"
+        },
+        {
+            "name": "Radio Pulse",
+            "start": 9400,
+            "end": 9750,
+            "frequency_unit": "MHz",
+            "color": "#ff00ff"
         }
     ]
 }

@@ -141,6 +141,10 @@ class RFAllocationTable(QMainWindow):
             service = RFService(service_name, start_frequency,
                                 end_frequency, service_color)
             self.rf_services.append(service)
+
+            # Sort the rf_services list based on start frequencies
+            self.rf_services.sort(key=lambda x: x.start)
+
             self.update_rf_map()
 
     def update_rf_map(self):
@@ -176,8 +180,11 @@ class RFAllocationTable(QMainWindow):
             for existing_service in self.rf_services:
                 if existing_service != service:
                     # Check if there is overlap with existing services
-                    if (service.end >= existing_service.start and service.start <= existing_service.end) or \
-                            (service.start <= existing_service.end and service.end >= existing_service.start):
+                    overlap_threshold = 0.001
+                    if (service.end >= existing_service.start + overlap_threshold and 
+                        service.start <= existing_service.end - overlap_threshold) or \
+                       (service.start <= existing_service.end - overlap_threshold and 
+                        service.end >= existing_service.start + overlap_threshold):
                         overlapping_services.append(existing_service)
 
             if overlapping_services:
@@ -219,7 +226,7 @@ class RFAllocationTable(QMainWindow):
 
     def resizeEvent(self, event):
         self.rf_map_scene.setSceneRect(
-            0, 0, 10000, self.rf_spectrum_rect.height() + 100)
+            0, 0, 300000000, self.rf_spectrum_rect.height() + 100)
         self.rf_map_view.setSceneRect(self.rf_map_scene.sceneRect())
         super().resizeEvent(event)
 
@@ -352,8 +359,8 @@ class CustomGraphicsView(QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
         self.setMouseTracking(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setDragMode(QGraphicsView.ScrollHandDrag)
         self.setRenderHint(QPainter.Antialiasing)
         self.setRenderHint(QPainter.TextAntialiasing)
