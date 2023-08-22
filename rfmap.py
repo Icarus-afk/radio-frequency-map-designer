@@ -1,7 +1,7 @@
 import json
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsRectItem, \
     QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QAction, QFileDialog, QColorDialog, QToolTip, QScrollBar, QComboBox
-from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap, QPalette
+from PyQt5.QtGui import QColor, QPen, QBrush, QFont, QPainter, QPixmap
 from PyQt5.QtCore import Qt, QRectF, QPoint, QPointF
 from PyQt5 import QtPrintSupport
 
@@ -18,21 +18,16 @@ class RFAllocationTable(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Set the application palette
-        palette = QPalette()
-        palette.setColor(QPalette.Window, Qt.white)
-        palette.setColor(QPalette.WindowText, Qt.black)
-        self.setPalette(palette)
-
         self.setWindowTitle("National Radio Frequency Allocation Table")
-        self.setGeometry(100, 100, 1000, 6000)
+        self.setGeometry(100, 100, 1200, 1000)
 
         self.rf_map_scene = QGraphicsScene(self)
         self.rf_map_view = CustomGraphicsView(self.rf_map_scene)
         self.setCentralWidget(self.rf_map_view)
 
-        self.rf_spectrum_rect = QRectF(3, 0, 300000000, 300)        
-        self.rf_map_scene.setSceneRect(0, 0, 100, self.rf_spectrum_rect.height()+10 )
+        self.rf_spectrum_rect = QRectF(50, 50, 300000000, 300)
+        self.rf_map_scene.setSceneRect(
+            0, 0, 100, self.rf_spectrum_rect.height() + 100)
 
         self.rf_map_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.rf_map_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -48,34 +43,37 @@ class RFAllocationTable(QMainWindow):
 
         self.service_name_label = QLabel("Service Name:")
         self.service_name_edit = QLineEdit()
-        self.frequency_units = ["KHz", "MHz", "GHz"]
+        self.input_layout.addWidget(self.service_name_label)
+        self.input_layout.addWidget(self.service_name_edit)
+
         self.start_frequency_label = QLabel("Start Frequency:")
         self.start_frequency_edit = QLineEdit()
         self.start_frequency_unit_combo = QComboBox()
-        self.start_frequency_unit_combo.addItems(self.frequency_units)
+        self.start_frequency_unit_combo.addItem("KHz")
+        self.start_frequency_unit_combo.addItem("MHz")
+        self.start_frequency_unit_combo.addItem("GHz")
+        self.input_layout.addWidget(self.start_frequency_label)
+        self.input_layout.addWidget(self.start_frequency_edit)
+        self.input_layout.addWidget(self.start_frequency_unit_combo)
 
         self.end_frequency_label = QLabel("End Frequency:")
         self.end_frequency_edit = QLineEdit()
         self.end_frequency_unit_combo = QComboBox()
-        self.end_frequency_unit_combo.addItems(self.frequency_units)
-        
-        self.add_service_button = QPushButton("Add Service")
-        self.add_service_button.clicked.connect(self.add_service)
-
-        self.input_layout.addWidget(self.service_name_label)
-        self.input_layout.addWidget(self.service_name_edit)
-        self.input_layout.addWidget(self.start_frequency_label)
-        self.input_layout.addWidget(self.start_frequency_edit)
-        self.input_layout.addWidget(self.start_frequency_unit_combo)
+        self.end_frequency_unit_combo.addItem("KHz")
+        self.end_frequency_unit_combo.addItem("MHz")
+        self.end_frequency_unit_combo.addItem("GHz")
         self.input_layout.addWidget(self.end_frequency_label)
         self.input_layout.addWidget(self.end_frequency_edit)
         self.input_layout.addWidget(self.end_frequency_unit_combo)
+
+        self.add_service_button = QPushButton("Add Service")
+        self.add_service_button.clicked.connect(self.add_service)
         self.input_layout.addWidget(self.add_service_button)
 
-        self.input_widget.setMaximumWidth(200)
+        self.input_widget.setMaximumWidth(350)
         toolbar = self.addToolBar("Input Fields")
-        toolbar.setFixedWidth(200)
-        toolbar.setMovable(True)
+        toolbar.setFixedWidth(350)
+        toolbar.setMovable(False)
         toolbar.addWidget(self.input_widget)
 
         self.edit_service_action = QAction("Edit Service", self)
@@ -101,23 +99,6 @@ class RFAllocationTable(QMainWindow):
         self.selected_service_index = -1
 
     def create_menus(self):
-        # Set the stylesheet for the menu bar
-        self.menuBar().setStyleSheet(
-            """
-            QMenuBar {
-                background-color: #f2f2f2;
-                color: #000000;
-                font-weight: bold;
-            }
-            QMenuBar::item {
-                background-color: transparent;
-            }
-            QMenuBar::item:selected {
-                background-color: #dddddd;
-            }
-            """
-        )
-
         file_menu = self.menuBar().addMenu("File")
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.load_action)
@@ -127,7 +108,6 @@ class RFAllocationTable(QMainWindow):
         edit_menu = self.menuBar().addMenu("Edit")
         edit_menu.addAction(self.edit_service_action)
         edit_menu.addAction(self.delete_service_action)
-
 
     def add_service(self):
         service_name = self.service_name_edit.text()
@@ -150,7 +130,7 @@ class RFAllocationTable(QMainWindow):
             end_frequency *= 1000
         elif end_frequency_unit == "GHz":
             end_frequency *= 1000000
-            
+
         color = QColorDialog.getColor()
         if color.isValid():
             service_color = color
@@ -158,22 +138,24 @@ class RFAllocationTable(QMainWindow):
             service_color = QColor(255, 0, 0)  # Predefined color (red)
 
         if service_name and start_frequency and end_frequency:
-            service = RFService(service_name, start_frequency, end_frequency, service_color)
+            service = RFService(service_name, start_frequency,
+                                end_frequency, service_color)
             self.rf_services.append(service)
             self.update_rf_map()
 
     def update_rf_map(self):
         self.rf_map_scene.clear()
 
-        rf_spectrum_width = self.rf_spectrum_rect.width()
-
         for service in self.rf_services:
-            normalized_start = (service.start - self.rf_spectrum_rect.x()) / rf_spectrum_width
-            normalized_end = (service.end - self.rf_spectrum_rect.x()) / rf_spectrum_width
-            box_width = (normalized_end - normalized_start) * rf_spectrum_width
+            normalized_start = (
+                service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+            normalized_end = (
+                service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
+            box_width = (normalized_end - normalized_start) * \
+                self.rf_spectrum_rect.width()
 
             service_rect = QGraphicsRectItem(
-                self.rf_spectrum_rect.x() + normalized_start * rf_spectrum_width,
+                self.rf_spectrum_rect.x() + normalized_start * self.rf_spectrum_rect.width(),
                 self.rf_spectrum_rect.y(),
                 box_width,
                 self.rf_spectrum_rect.height()
@@ -194,13 +176,9 @@ class RFAllocationTable(QMainWindow):
             for existing_service in self.rf_services:
                 if existing_service != service:
                     # Check if there is overlap with existing services
-                    overlap_threshold = 0.001
-                    if (service.end >= existing_service.start + overlap_threshold and 
-                        service.start <= existing_service.end - overlap_threshold) or \
-                       (service.start <= existing_service.end - overlap_threshold and 
-                        service.end >= existing_service.start + overlap_threshold):
+                    if (service.end >= existing_service.start and service.start <= existing_service.end) or \
+                            (service.start <= existing_service.end and service.end >= existing_service.start):
                         overlapping_services.append(existing_service)
-
 
             if overlapping_services:
                 num_overlapping = len(overlapping_services) + 1
@@ -209,24 +187,28 @@ class RFAllocationTable(QMainWindow):
 
                 for overlapping_service in overlapping_services:
                     overlapping_normalized_start = (
-                            overlapping_service.start - self.rf_spectrum_rect.x()) / rf_spectrum_width
+                        overlapping_service.start - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
                     overlapping_normalized_end = (
-                            overlapping_service.end - self.rf_spectrum_rect.x()) / rf_spectrum_width
+                        overlapping_service.end - self.rf_spectrum_rect.x()) / self.rf_spectrum_rect.width()
                     overlapping_box_width = (
-                            overlapping_normalized_end - overlapping_normalized_start) * rf_spectrum_width
+                        overlapping_normalized_end - overlapping_normalized_start) * self.rf_spectrum_rect.width()
 
                     overlapping_service_rect = QGraphicsRectItem(
-                        self.rf_spectrum_rect.x() + overlapping_normalized_start * rf_spectrum_width,
+                        self.rf_spectrum_rect.x() + overlapping_normalized_start *
+                        self.rf_spectrum_rect.width(),
                         box_y,
                         overlapping_box_width,
                         box_height
                     )
                     overlapping_service_rect.setPen(QPen(Qt.black))
-                    overlapping_service_rect.setBrush(QBrush(overlapping_service.color))
+                    overlapping_service_rect.setBrush(
+                        QBrush(overlapping_service.color))
                     self.rf_map_scene.addItem(overlapping_service_rect)
 
-                    text_item = self.rf_map_scene.addSimpleText(overlapping_service.name)
-                    text_item.setPos(overlapping_service_rect.rect().topLeft() + QPoint(5, 5))
+                    text_item = self.rf_map_scene.addSimpleText(
+                        overlapping_service.name)
+                    text_item.setPos(
+                        overlapping_service_rect.rect().topLeft() + QPoint(5, 5))
                     text_item.setFont(QFont("Arial", 8))
 
                     # Add tooltip for each overlapping service
@@ -236,12 +218,14 @@ class RFAllocationTable(QMainWindow):
                     box_y += box_height
 
     def resizeEvent(self, event):
-        self.rf_map_scene.setSceneRect(0, 0, 400000, self.rf_spectrum_rect.height() + 100)
+        self.rf_map_scene.setSceneRect(
+            0, 0, 10000, self.rf_spectrum_rect.height() + 100)
         self.rf_map_view.setSceneRect(self.rf_map_scene.sceneRect())
         super().resizeEvent(event)
 
     def save_file(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "radio map (*.rfmap)")
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Save File", "", "radio map (*.rfmap)")
         if file_path:
             if not file_path.endswith(".rfmap"):
                 file_path += ".rfmap"
@@ -260,7 +244,8 @@ class RFAllocationTable(QMainWindow):
                 json.dump(data, file)
 
     def load_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Load File", "", "radio map (*.rfmap)")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Load File", "", "radio map (*.rfmap)")
         if file_path:
             with open(file_path, "r") as file:
                 data = json.load(file)
@@ -284,6 +269,7 @@ class RFAllocationTable(QMainWindow):
             start_frequency_unit = self.start_frequency_unit_combo.currentText()
             end_frequency_unit = self.end_frequency_unit_combo.currentText()
 
+
             if start_frequency_unit == "KHz":
                 service.start *= 1  # Convert KHz to Hz
             elif start_frequency_unit == "MHz":
@@ -297,7 +283,6 @@ class RFAllocationTable(QMainWindow):
                 service.end *= 1000
             elif end_frequency_unit == "GHz":
                 service.end *= 1000000
-
             color = QColorDialog.getColor(service.color)
             if color.isValid():
                 service.color = color
@@ -312,13 +297,15 @@ class RFAllocationTable(QMainWindow):
             self.update_rf_map()
 
     def export_image(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Export Image", "", "PNG (*.png);;JPEG (*.jpg *.jpeg)")
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export Image", "", "PNG (*.png);;JPEG (*.jpg *.jpeg)")
         if file_path:
             pixmap = self.rf_map_view.grab()
             pixmap.save(file_path)
 
     def print_table(self):
-        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+        printer = QtPrintSupport.QPrinter(
+            QtPrintSupport.QPrinter.HighResolution)
         dialog = QtPrintSupport.QPrintDialog(printer, self)
         if dialog.exec() == QtPrintSupport.QPrintDialog.Accepted:
             painter = QPainter(printer)
@@ -353,7 +340,8 @@ class RFAllocationTable(QMainWindow):
         modifiers = QApplication.keyboardModifiers()
         if modifiers == Qt.ControlModifier:
             # Enable zooming when holding the Ctrl key and scrolling
-            zoom_factor = 1.05 if event.angleDelta().y() > 0 else 0.95  # Adjust the zoom factor as desired
+            # Adjust the zoom factor as desired
+            zoom_factor = 1.05 if event.angleDelta().y() > 0 else 0.95
             self.rf_map_view.scale(zoom_factor, zoom_factor)
         else:
             # Perform default vertical scrolling
@@ -376,7 +364,8 @@ class CustomGraphicsView(QGraphicsView):
         if modifiers == Qt.ControlModifier:
             # Enable horizontal scrolling when holding the Ctrl key and scrolling
             delta = event.angleDelta().y() / 120
-            scroll_value = int(delta * 20)  # Convert scroll_value to an integer
+            # Convert scroll_value to an integer
+            scroll_value = int(delta * 20)
             self.scroll(scroll_value, 0)
         else:
             # Perform default vertical scrolling
@@ -386,8 +375,6 @@ class CustomGraphicsView(QGraphicsView):
 if __name__ == "__main__":
     app = QApplication([])
     rf_allocation_table = RFAllocationTable()
-
-    # Set the stylesheet for the input fields, buttons, and scene view
     rf_allocation_table.service_name_edit.setStyleSheet(
         """
         QLineEdit {
